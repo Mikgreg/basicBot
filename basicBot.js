@@ -454,7 +454,7 @@ var esBot = {
                                             }, 90 * 1000, user);
                                         }
                                         else if(warncount === 1){
-                                            API.sendChat("/me @" + name + ", "Final warning for being AFK, speak now");
+                                            API.sendChat("/me @" + name + ", 'Final warning for being AFK, speak now');
                                             user.afkWarningCount = 3;
                                             user.afkCountdown = setTimeout(function(userToChange){
                                                 userToChange.afkWarningCount = 2;
