@@ -89,7 +89,7 @@ var esBot = {
         version: "1.1.5",        
         status: false,
         name: "VoltBot",
-        creator: "EuclideanSpace - Small edits by Mikgreg",
+        creator: "EuclideanSpace with changes by Mikgreg",
         loggedInID: null,
         scriptLink: "https://raw.githubusercontent.com/Mikgreg/basicBot/master/basicBot.js",
         cmdLink: "http://is.gd/voltbotcmd",
@@ -106,7 +106,7 @@ var esBot = {
             timeGuard: true,
             maximumSongLength: 8,                
             autodisable: true,                
-            commandCooldown: 0,
+            commandCooldown: 1,
             usercommandsEnabled: true,                
             lockskipPosition: 3,
             lockskipReasons: [ ["theme", "This song does not fit the room theme. "], 
@@ -133,7 +133,7 @@ var esBot = {
             website: null,
             intervalMessages: [],
             messageInterval: 5,
-            songstats: true,                      
+            songstats: false,                      
         },        
         room: {        
             users: [],                
@@ -183,7 +183,7 @@ var esBot = {
                 startRoulette: function(){
                     esBot.room.roulette.rouletteStatus = true;
                     esBot.room.roulette.countdown = setTimeout(function(){ esBot.room.roulette.endRoulette(); }, 60 * 1000);
-                    API.sendChat("/me Want a chance for a new spot in the waitlist? Type !join");
+                    API.sendChat("/me The roulette is now open! Type !join to play!");
                 },
                 endRoulette: function(){
                     esBot.room.roulette.rouletteStatus = false;
@@ -193,7 +193,7 @@ var esBot = {
                     var pos = Math.floor((Math.random() * API.getWaitList().length) + 1);
                     var user = esBot.userUtilities.lookupUser(winner);
                     var name = user.username;
-                    API.sendChat("/me Our lucky winner is @" + name +);
+                    API.sendChat("/me A winner has been picked! @" + name + " to position " + pos + ".");
                     setTimeout(function(winner){
                         esBot.userUtilities.moveUser(winner, pos, false);
                     }, 1*1000, winner, pos);
@@ -318,7 +318,7 @@ var esBot = {
                 var user = esBot.userUtilities.lookupUser(id);                        
                 if(typeof user === 'boolean') return ('/me User not found.');
                 var name = user.username;
-                if(user.lastDC.time === null) return ('/me @' + name + ' did not disconnect during bots uptime');
+                if(user.lastDC.time === null) return ('/me @' + name + ' did not disconnect during my time here.');
                 var dc = user.lastDC.time;
                 var pos  = user.lastDC.position;
                 if(pos === null) return ("/me The waitlist needs to update at least once to register the user's last position.");
@@ -328,7 +328,7 @@ var esBot = {
                     validDC = true;
                 }                        
                 var time = esBot.roomUtilities.msToStr(timeDc);
-                if(!validDC) return ("/me @" + esBot.userUtilities.getUser(user).username + "'s last disconnect was too long ago);
+                if(!validDC) return ("/me @" + esBot.userUtilities.getUser(user).username + "'s last disconnect (DC or leave) was too long ago: " + time + ".");
                 var songsPassed = esBot.room.roomstats.songCount - user.lastDC.songCount;
                 var afksRemoved = 0;
                 var afkList = esBot.room.afkList;
@@ -447,14 +447,14 @@ var esBot = {
                                     var warncount = user.afkWarningCount;
                                     if (inactivity > esBot.roomSettings.maximumAfk * 60 * 1000 ){
                                         if(warncount === 0){
-                                            API.sendChat('/me @' + name + ', you havent spoken for 90 mins, speak within 2 mins or be removed from the wait list.');
+                                            API.sendChat('/me @' + name + ', you have been AFK for too long. Please talk in chat.');
                                             user.afkWarningCount = 3;
                                             user.afkCountdown = setTimeout(function(userToChange){
                                                 userToChange.afkWarningCount = 1; 
                                             }, 90 * 1000, user);
                                         }
                                         else if(warncount === 1){
-                                            API.sendChat("/me @" + name + ", 'Final warning for being AFK, speak now');
+                                            API.sendChat("/me @" + name + ", you will be removed soon if you don't respond.");
                                             user.afkWarningCount = 3;
                                             user.afkCountdown = setTimeout(function(userToChange){
                                                 userToChange.afkWarningCount = 2;
@@ -471,7 +471,7 @@ var esBot = {
                                                     songCount: 0,
                                                 };
                                                 API.moderateRemoveDJ(id);
-                                                API.sendChat('/me @' + name + ', You have been afk for 90 mins so you have been removed.');
+                                                API.sendChat('/me @' + name + ', you have been removed for being afk for ' + time + '. You were at position ' + pos + '. Chat at least once every ' + esBot.roomSettings.maximumAfk + ' minutes if you want to play a song.');
                                             }
                                             user.afkWarningCount = 0;
                                         };
@@ -621,7 +621,7 @@ var esBot = {
             var newMedia = obj.media;
             if(esBot.roomSettings.timeGuard && newMedia.duration > esBot.roomSettings.maximumSongLength*60  && !esBot.room.roomevent){
                 var name = obj.dj.username;
-                API.sendChat('/me @' + name + ', Songs longer than 8 mins are not allowed, please read the rules.');
+                API.sendChat('/me @' + name + ', songs above 8 minutes are not allowed.');
                 API.moderateForceSkip();
             }
             var user = esBot.userUtilities.lookupUser(obj.dj.id);
@@ -687,7 +687,7 @@ var esBot = {
                 if(ch >= 'A' && ch <= 'Z') capitals++;
             }
             if(capitals >= 40){
-                API.sendChat("/me @" + chat.from + ", Do not use so much CAPS.");
+                API.sendChat("/me @" + chat.from + ", unglue your capslock button please.");
                 return true;
             }
             msg = msg.toLowerCase();
@@ -737,7 +737,7 @@ var esBot = {
                     if (plugRoomLinkPatt.exec(msg)) {
                       sender = API.getUser(chat.fromID);
                       if (perm === 0) {                                                              
-                              API.sendChat("/me @" + chat.from + ", advertising other rooms is not allowed.");
+                              API.sendChat("/me @" + chat.from + ", don't post links to other rooms please.");
                               API.moderateDeleteChat(chat.chatID);
                               return true;
                       }
@@ -1020,7 +1020,7 @@ var esBot = {
             esBot.status = true;
             API.sendChat('/cap 1');
             API.setVolume(0);
-            API.sendChat('/me VoltBot is now online :eyes:');
+            API.sendChat('/me VoltBot is now online and ready');
         },                        
         commands: {        
             executable: function(minRank, chat){
@@ -1561,7 +1561,7 @@ var esBot = {
                                 else{
                                     if(esBot.room.roulette.rouletteStatus && esBot.room.roulette.participants.indexOf(chat.fromID) < 0){
                                         esBot.room.roulette.participants.push(chat.fromID);
-                                        API.sendChat("/me @" + chat.from + " joined the roulette! (!leave if you regret it.)");
+                                        API.sendChat("/me @" + chat.from + " joined the roulette!");
                                     }
                                 };                              
                         },
