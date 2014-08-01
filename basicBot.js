@@ -88,7 +88,7 @@ var retrieveFromStorage = function(){
 var esBot = {
         version: "1.1.5",        
         status: false,
-        name: "VoltBot",
+        name: "MikeBot",
         creator: "EuclideanSpace with changes by Mikgreg",
         loggedInID: null,
         scriptLink: "https://raw.githubusercontent.com/Mikgreg/basicBot/master/basicBot.js",
@@ -1020,7 +1020,7 @@ var esBot = {
             esBot.status = true;
             API.sendChat('/cap 1');
             API.setVolume(0);
-            API.sendChat('/me VoltBot is now online and ready');
+            API.sendChat('/me MikeBot is now alive!');
         },                        
         commands: {        
             executable: function(minRank, chat){
