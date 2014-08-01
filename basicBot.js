@@ -1315,7 +1315,7 @@ var esBot = {
                 },
 
                 cookieCommand: {
-                        rank: 'user',
+                        rank: 'manager',
                         type: 'startsWith',
 
                         cookies: ['has given you a chocolate chip cookie!',
@@ -1494,7 +1494,7 @@ var esBot = {
                 },
 
                 etaCommand: {
-                        rank: 'user',
+                        rank: 'manager',
                         type: 'startsWith',
                         functionality: function(chat, cmd){
                                 if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
