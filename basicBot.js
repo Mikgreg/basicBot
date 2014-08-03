@@ -1,19 +1,8 @@
 /**
- * @license Copyright (C) 2014 
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/> .
- */
+*Copyright 2014 Mathieu Samaey
+*Modifications (including forks) of the code to fit personal needs are allowed only for personal use and should refer back to the original source.
+*This software is not for profit, any extension, or unauthorised person providing this software is not authorised to be in a position of any monetary gain from this use of this software. Any and all money gained under the use of the software (which includes donations) must be passed on to the original author.
+*/
 
 
 (function(){
@@ -86,28 +75,28 @@ var retrieveFromStorage = function(){
 };
 
 var esBot = {
-        version: "1.1.5",        
+        version: "1.2.2",        
         status: false,
         name: "MikeBot",
-        creator: "EuclideanSpace with changes by Mikgreg",
+        creator: "Matthew with small changes by Mikgreg",
         loggedInID: null,
-        scriptLink: "https://raw.githubusercontent.com/Mikgreg/basicBot/master/basicBot.js",
-        cmdLink: "http://is.gd/voltbotcmd",
+        scriptLink: "https://github.com/Mikgreg/basicBot/blob/master/basicBot.js",
+        cmdLink: "https://github.com/Mikgreg/basicBot/blob/master/commands.md",
         roomSettings: {
             maximumAfk: 90,
-            afkRemoval: true,                
-            maximumDc: 15,                                
+            afkRemoval: false,                
+            maximumDc: 60,                                
             bouncerPlus: true,                
             lockdownEnabled: false,                
             lockGuard: false,
             maximumLocktime: 10,                
-            cycleGuard: true,
+            cycleGuard: false,
             maximumCycletime: 10,                
             timeGuard: true,
             maximumSongLength: 8,                
             autodisable: true,                
-            commandCooldown: 1,
-            usercommandsEnabled: true,                
+            commandCooldown: 0,
+            usercommandsEnabled: false,                
             lockskipPosition: 3,
             lockskipReasons: [ ["theme", "This song does not fit the room theme. "], 
                     ["op", "This song is on the OP list. "], 
@@ -118,10 +107,10 @@ var esBot = {
                     ["unavailable", "The song you played was not available for some users. "] 
                 ],
             afkpositionCheck: 15,
-            afkRankCheck: "ambassador",                
-            motdEnabled: true,
+            afkRankCheck: "manager",                
+            motdEnabled: false,
             motdInterval: 5,
-            motd: "Welcome to Voltage",                
+            motd: "Temporary Message of the Day",                
             filterChat: true,
             etaRestriction: false,
             welcome: false,
@@ -133,7 +122,7 @@ var esBot = {
             website: null,
             intervalMessages: [],
             messageInterval: 5,
-            songstats: false,                      
+            songstats: true,                      
         },        
         room: {        
             users: [],                
@@ -183,7 +172,7 @@ var esBot = {
                 startRoulette: function(){
                     esBot.room.roulette.rouletteStatus = true;
                     esBot.room.roulette.countdown = setTimeout(function(){ esBot.room.roulette.endRoulette(); }, 60 * 1000);
-                    API.sendChat("/me The roulette is now open! Type !join to play!");
+                    API.sendChat("/me [Roulette] Want a random spot in the waitlist? Type !join");
                 },
                 endRoulette: function(){
                     esBot.room.roulette.rouletteStatus = false;
@@ -447,14 +436,14 @@ var esBot = {
                                     var warncount = user.afkWarningCount;
                                     if (inactivity > esBot.roomSettings.maximumAfk * 60 * 1000 ){
                                         if(warncount === 0){
-                                            API.sendChat('/me @' + name + ', you have been AFK for too long. Please talk in chat.');
+                                            API.sendChat('/me @' + name + ', you have been afk for ' + time + ', please respond within 2 minutes or you will be removed.');
                                             user.afkWarningCount = 3;
                                             user.afkCountdown = setTimeout(function(userToChange){
                                                 userToChange.afkWarningCount = 1; 
                                             }, 90 * 1000, user);
                                         }
                                         else if(warncount === 1){
-                                            API.sendChat("/me @" + name + ", you will be removed soon if you don't respond.");
+                                            API.sendChat("/me @" + name + ", you will be removed soon if you don't respond. [AFK]");
                                             user.afkWarningCount = 3;
                                             user.afkCountdown = setTimeout(function(userToChange){
                                                 userToChange.afkWarningCount = 2;
@@ -501,6 +490,7 @@ var esBot = {
                 if(esBot.roomSettings.motdEnabled) interval = esBot.roomSettings.motdInterval;
                 else interval = esBot.roomSettings.messageInterval;
                 if((esBot.room.roomstats.songCount % interval) === 0 && esBot.status){
+                    API.sendChat("/me Plug will be down for maintenance on Monday, August 4th. Please read http://blog.plug.dj/2014/07/site-update-maintenance/ and http://blog.plug.dj/2014/07/message-to-those-using-extensions-or-bots/ for more info.");
                     var msg;
                     if(esBot.roomSettings.motdEnabled){
                         msg = esBot.roomSettings.motd;
@@ -516,7 +506,7 @@ var esBot = {
         },        
         eventChat: function(chat){
             for(var i = 0; i < esBot.room.users.length;i++){
-                if(esBot.room.users[i].id === chat.fromID){
+                if(esBot.room.users[i].id === chat.fid){
                         esBot.userUtilities.setLastActivity(esBot.room.users[i]);
                         if(esBot.room.users[i].username !== chat.from){
                                 esBot.room.users[i].username = chat.from;
@@ -621,7 +611,7 @@ var esBot = {
             var newMedia = obj.media;
             if(esBot.roomSettings.timeGuard && newMedia.duration > esBot.roomSettings.maximumSongLength*60  && !esBot.room.roomevent){
                 var name = obj.dj.username;
-                API.sendChat('/me @' + name + ', songs above 8 minutes are not allowed.');
+                API.sendChat('/me @' + name + ', your song is longer than ' + esBot.roomSettings.maximumSongLength + ' minutes, you need permission to play longer songs.');
                 API.moderateForceSkip();
             }
             var user = esBot.userUtilities.lookupUser(obj.dj.id);
@@ -668,7 +658,7 @@ var esBot = {
         },
         chatcleaner: function(chat){
             if(!esBot.roomSettings.filterChat) return false;
-            if(esBot.userUtilities.getPermission(chat.fromID) > 1) return false;
+            if(esBot.userUtilities.getPermission(chat.fid) > 1) return false;
             var msg = chat.message;
             var containsLetters = false;
             for(var i = 0; i < msg.length; i++){
@@ -712,43 +702,49 @@ var esBot = {
         chatUtilities: {        
             chatFilter: function(chat){
                 var msg = chat.message;
-                var perm = esBot.userUtilities.getPermission(chat.fromID);
-                var user = esBot.userUtilities.lookupUser(chat.fromID);
+                var perm = esBot.userUtilities.getPermission(chat.fid);
+                var user = esBot.userUtilities.lookupUser(chat.fid);
                 var isMuted = false;
                 for(var i = 0; i < esBot.room.mutedUsers.length; i++){
-                                if(esBot.room.mutedUsers[i] === chat.fromID) isMuted = true;
+                                if(esBot.room.mutedUsers[i] === chat.fid) isMuted = true;
                         }
                 if(isMuted){
-                    API.moderateDeleteChat(chat.chatID);
+                    API.moderateDeleteChat(chat.cid);
                     return true;
                     };
                 if(esBot.roomSettings.lockdownEnabled){
                                 if(perm === 0){    
-                                        API.moderateDeleteChat(chat.chatID);
+                                        API.moderateDeleteChat(chat.cid);
                                         return true;
                                 }
                         };
                 if(esBot.chatcleaner(chat)){
-                    API.moderateDeleteChat(chat.chatID);
+                    API.moderateDeleteChat(chat.cid);
                     return true;
                 }
                 var plugRoomLinkPatt, sender;
                     plugRoomLinkPatt = /(\bhttps?:\/\/(www.)?plug\.dj[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
                     if (plugRoomLinkPatt.exec(msg)) {
-                      sender = API.getUser(chat.fromID);
+                      sender = API.getUser(chat.fid);
                       if (perm === 0) {                                                              
                               API.sendChat("/me @" + chat.from + ", don't post links to other rooms please.");
-                              API.moderateDeleteChat(chat.chatID);
+                              API.moderateDeleteChat(chat.cid);
                               return true;
                       }
                     }
                 if(msg.indexOf('http://adf.ly/') > -1){
-                    API.moderateDeleteChat(chat.chatID);
+                    API.moderateDeleteChat(chat.cid);
                     API.sendChat('/me @' + chat.from + ', please change your autowoot program. We suggest PlugCubed: http://plugcubed.net/');
                     return true;
                 }                    
                 if(msg.indexOf('autojoin was not enabled') > 0 || msg.indexOf('AFK message was not enabled') > 0 || msg.indexOf('!afkdisable') > 0 || msg.indexOf('!joindisable') > 0 || msg.indexOf('autojoin disabled') > 0 || msg.indexOf('AFK message disabled') > 0){ 
-                    API.moderateDeleteChat(chat.chatID);
+                    API.moderateDeleteChat(chat.cid);
+                    return true;
+                }
+                if((msg.indexOf("joined the roulette") > -1 || msg.indexOf("left the roulette") > -1) && chat.fid === esBot.loggedInID){
+                    setTimeout(function(id){
+                        API.moderateDeleteChat(id);
+                    }, 2*1000, chat.cid);
                     return true;
                 }                       
             return false;                        
@@ -763,16 +759,16 @@ var esBot = {
                         else cmd = chat.message.substring(0,space);
                 }
                 else return false;
-                var userPerm = esBot.userUtilities.getPermission(chat.fromID);
+                var userPerm = esBot.userUtilities.getPermission(chat.fid);
                 if(chat.message !== "!join" && chat.message !== "!leave"){                            
                     if(userPerm === 0 && !esBot.room.usercommand) return void (0);
                     if(!esBot.room.allcommand) return void (0);
                 }                            
                 if(chat.message === '!eta' && esBot.roomSettings.etaRestriction){
                     if(userPerm < 2){
-                        var u = esBot.userUtilities.lookupUser(chat.fromID);
+                        var u = esBot.userUtilities.lookupUser(chat.fid);
                         if(u.lastEta !== null && (Date.now() - u.lastEta) < 1*60*60*1000){
-                            API.moderateDeleteChat(chat.chatID);
+                            API.moderateDeleteChat(chat.cid);
                             return void (0);
                         }
                         else u.lastEta = Date.now();
@@ -804,6 +800,7 @@ var esBot = {
                     case '!eta':                esBot.commands.etaCommand.functionality(chat, '!eta');                              executed = true; break;
                     case '!fb':                 esBot.commands.fbCommand.functionality(chat, '!fb');                                executed = true; break;
                     case '!filter':             esBot.commands.filterCommand.functionality(chat, '!filter');                        executed = true; break;
+                    case '!help':               esBot.commands.helpCommand.functionality(chat, '!help');                            executed = true; break;
                     case '!join':               esBot.commands.joinCommand.functionality(chat, '!join');                            executed = true; break;
                     case '!jointime':           esBot.commands.jointimeCommand.functionality(chat, '!jointime');                    executed = true; break;
                     case '!kick':               esBot.commands.kickCommand.functionality(chat, '!kick');                            executed = true; break;
@@ -830,6 +827,7 @@ var esBot = {
                     case '!rules':              esBot.commands.rulesCommand.functionality(chat, '!rules');                          executed = true; break;
                     case '!sessionstats':       esBot.commands.sessionstatsCommand.functionality(chat, '!sessionstats');            executed = true; break;
                     case '!skip':               esBot.commands.skipCommand.functionality(chat, '!skip');                            executed = true; break;
+                    case '!slap':               esBot.commands.slapCommand.functionality(chat, '!slap'); executed = true; break;    executed = true; break;
                     case '!status':             esBot.commands.statusCommand.functionality(chat, '!status');                        executed = true; break;
                     case '!swap':               esBot.commands.swapCommand.functionality(chat, '!swap');                            executed = true; break;
                     case '!theme':              esBot.commands.themeCommand.functionality(chat, '!theme');                          executed = true; break;
@@ -851,17 +849,17 @@ var esBot = {
                     setTimeout(function(){ esBot.room.usercommand = true; }, esBot.roomSettings.commandCooldown * 1000);                               
                 }
                 if(executed){
-                    API.moderateDeleteChat(chat.chatID);
+                    API.moderateDeleteChat(chat.cid);
                     esBot.room.allcommand = false;
                     setTimeout(function(){ esBot.room.allcommand = true; }, 5 * 1000);
                 }
                 return executed;                                
             },                        
             action: function(chat){
-                var user = esBot.userUtilities.lookupUser(chat.fromID);                        
+                var user = esBot.userUtilities.lookupUser(chat.fid);                        
                 if (chat.type === 'message') {
                     for(var j = 0; j < esBot.room.users.length;j++){
-                        if(esBot.userUtilities.getUser(esBot.room.users[j]).id === chat.fromID){
+                        if(esBot.userUtilities.getUser(esBot.room.users[j]).id === chat.fid){
                             esBot.userUtilities.setLastActivity(esBot.room.users[j]);
                         }
                     
@@ -981,7 +979,7 @@ var esBot = {
         startup: function(){
             var u = API.getUser();
             if(u.permission < 2) return API.chatLog("Only bouncers and up can run a bot.");
-            if(u.permission === 2) return API.chatLog("The bot can't move people when it's run as a bouncer.");
+            if(u.permission === 2) API.chatLog("The bot can't move people when it's run as a bouncer.");
             if(navigator.userAgent.toLowerCase().indexOf("chrome")<0){
                 API.chatLog("Storing data across sessions isn't supported when not running the bot on Google Chrome.");
                 console.log("Storing data across sessions isn't supported when not running the bot on Google Chrome.");
@@ -1020,11 +1018,11 @@ var esBot = {
             esBot.status = true;
             API.sendChat('/cap 1');
             API.setVolume(0);
-            API.sendChat('/me MikeBot is now alive!');
+            API.sendChat('/me started!');
         },                        
         commands: {        
             executable: function(minRank, chat){
-                var id = chat.fromID;
+                var id = chat.fid;
                 var perm = esBot.userUtilities.getPermission(id);
                 var minPerm;
                 switch(minRank){
@@ -1256,7 +1254,7 @@ var esBot = {
                 },
 
                 bouncerPlusCommand: {
-                        rank: 'manager',
+                        rank: 'mod',
                         type: 'exact',
                         functionality: function(chat, cmd){
                                 if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
@@ -1269,7 +1267,7 @@ var esBot = {
                                         }
                                     else{ 
                                         if(!esBot.roomSettings.bouncerPlus){
-                                            var id = chat.fromID;
+                                            var id = chat.fid;
                                             var perm = esBot.userUtilities.getPermission(id);
                                             if(perm > 2){
                                                 esBot.roomSettings.bouncerPlus = true;
@@ -1303,7 +1301,7 @@ var esBot = {
                 },
 
                 commandsCommand: {
-                        rank: 'user',
+                        rank: 'manager',
                         type: 'exact',
                         functionality: function(chat, cmd){
                                 if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
@@ -1437,7 +1435,7 @@ var esBot = {
                                     if(msg.length === cmd.length) name = chat.from;
                                     else{ 
                                         name = msg.substring(cmd.length + 2);
-                                        var perm = esBot.userUtilities.getPermission(chat.fromID);
+                                        var perm = esBot.userUtilities.getPermission(chat.fid);
                                         if(perm < 2) return API.sendChat('/me [@' + chat.from + '] Only bouncers and above can do !dclookup for others.');
                                     }    
                                     var user = esBot.userUtilities.lookupUserName(name);
@@ -1450,7 +1448,7 @@ var esBot = {
                 },
 
                 emojiCommand: {
-                        rank: 'user',
+                        rank: 'bouncer',
                         type: 'exact',
                         functionality: function(chat, cmd){
                                 if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
@@ -1494,13 +1492,13 @@ var esBot = {
                 },
 
                 etaCommand: {
-                        rank: 'manager',
+                        rank: 'bouncer',
                         type: 'startsWith',
                         functionality: function(chat, cmd){
                                 if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
                                 if( !esBot.commands.executable(this.rank, chat) ) return void (0);
                                 else{
-                                    var perm = esBot.userUtilities.getPermission(chat.fromID);
+                                    var perm = esBot.userUtilities.getPermission(chat.fid);
                                     var msg = chat.message;
                                     var name;
                                     if(msg.length > cmd.length){
@@ -1552,6 +1550,18 @@ var esBot = {
                         },
                 },
 
+                helpCommand: {
+                        rank: 'bouncer',
+                        type: 'exact',
+                        functionality: function(chat, cmd){
+                                if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
+                                if( !esBot.commands.executable(this.rank, chat) ) return void (0);
+                                else{
+                                    API.sendChat("/me This image will get you started on plug: http://i.imgur.com/SBAso1N.jpg");
+                                };                              
+                        },
+                },
+
                 joinCommand: {
                         rank: 'user',
                         type: 'exact',
@@ -1559,9 +1569,9 @@ var esBot = {
                                 if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
                                 if( !esBot.commands.executable(this.rank, chat) ) return void (0);
                                 else{
-                                    if(esBot.room.roulette.rouletteStatus && esBot.room.roulette.participants.indexOf(chat.fromID) < 0){
-                                        esBot.room.roulette.participants.push(chat.fromID);
-                                        API.sendChat("/me @" + chat.from + " joined the roulette!");
+                                    if(esBot.room.roulette.rouletteStatus && esBot.room.roulette.participants.indexOf(chat.fid) < 0){
+                                        esBot.room.roulette.participants.push(chat.fid);
+                                        API.sendChat("/me @" + chat.from + " joined the roulette! (!leave if you regret it.)");
                                     }
                                 };                              
                         },
@@ -1611,7 +1621,7 @@ var esBot = {
                                     var from = chat.from;
                                     if(typeof user === 'boolean') return API.sendChat('/me [@' + chat.from + '] No valid user specified.');
 
-                                    var permFrom = esBot.userUtilities.getPermission(chat.fromID);
+                                    var permFrom = esBot.userUtilities.getPermission(chat.fid);
                                     var permTokick = esBot.userUtilities.getPermission(user.id);
 
                                     if(permFrom <= permTokick)
@@ -1657,7 +1667,7 @@ var esBot = {
                                 if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
                                 if( !esBot.commands.executable(this.rank, chat) ) return void (0);
                                 else{
-                                    var ind = esBot.room.roulette.participants.indexOf(chat.fromID);
+                                    var ind = esBot.room.roulette.participants.indexOf(chat.fid);
                                     if(ind > -1){
                                         esBot.room.roulette.participants.splice(ind, 1);
                                         API.sendChat("/me @" + chat.from + " left the roulette!");
@@ -1675,11 +1685,11 @@ var esBot = {
                                 else{
                                     var media = API.getMedia();
                                     var from = chat.from;
-                                    var user = esBot.userUtilities.lookupUser(chat.fromID);
-                                    var perm = esBot.userUtilities.getPermission(chat.fromID);
+                                    var user = esBot.userUtilities.lookupUser(chat.fid);
+                                    var perm = esBot.userUtilities.getPermission(chat.fid);
                                     var dj = API.getDJ().id;
                                     var isDj = false;
-                                    if (dj === chat.fromID) isDj = true;
+                                    if (dj === chat.fid) isDj = true;
                                     if(perm >= 1 || isDj){
                                         if(media.format === '1'){
                                             var linkToSong = "https://www.youtube.com/watch?v=" + media.cid;
@@ -1953,7 +1963,7 @@ var esBot = {
                                     var from = chat.from;
                                     var user = esBot.userUtilities.lookupUserName(name);
                                     if(typeof user === 'boolean') return API.sendChat('/me [@' + chat.from + '] Invalid user specified.');
-                                    var permFrom = esBot.userUtilities.getPermission(chat.fromID);
+                                    var permFrom = esBot.userUtilities.getPermission(chat.fid);
                                     var permUser = esBot.userUtilities.getPermission(user.id);
                                     if(permFrom > permUser){
                                         esBot.room.mutedUsers.push(user.id);
@@ -2144,10 +2154,57 @@ var esBot = {
                                 
                                 };                              
                         },
+                },
+
+                slapCommand: {
+                        rank: 'manager',
+                        type: 'startsWith',
+
+                        slaps: ['slaps you with a tuna!',
+                                   'doubleslaps you!',
+                                   'tries to slap you but it fails!',
+                                   'http://fc04.deviantart.net/fs70/f/2013/135/d/b/fish_slap_2_by_ibiscorosa-d65djgt.jpg',
+                                   'misses and slaps him/herself!',
+                                   "http://38.media.tumblr.com/tumblr_m6fujeUz621rwcc6bo1_250.gif",
+                                   'http://38.media.tumblr.com/dcbf788176715156472764c7723f21ae/tumblr_n5ixbxSar81rfduvxo1_500.gif'
+                            ],
+
+                        getSlap: function() {
+                            var c = Math.floor(Math.random() * this.slaps.length);
+                            return this.slaps[c];
+                        },
+
+                        functionality: function(chat, cmd){
+                                if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
+                                if( !esBot.commands.executable(this.rank, chat) ) return void (0);
+                                else{
+                                    var msg = chat.message;
+      
+                                    var space = msg.indexOf(' ');
+                                    if(space === -1){ 
+                                        API.sendChat('/em But who?!');
+                                        return false;
+                                    }
+                                    else{
+                                        var name = msg.substring(space + 2);
+                                        var user = esBot.userUtilities.lookupUserName(name);
+                                        if (user === false || !user.inRoom) {
+                                          return API.sendChat("/em doesn't see '" + name + "' in room and slaps the air.");
+                                        } 
+                                        else if(user.username === chat.from){
+                                            return API.sendChat("/me @" + name +  ", you want to get slapped? Ieuw, no kinky stuff please.");
+                                        }
+                                        else {
+                                            return API.sendChat("/me @" + user.username + ", @" + chat.from + ' ' + this.getSlap() );
+                                        }
+                                    }
+                                
+                                };                              
+                        },
                 },  
 
                 sourceCommand: {
-                        rank: 'user',
+                        rank: 'ambassador',
                         type: 'exact',
                         functionality: function(chat, cmd){
                                 if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
@@ -2249,7 +2306,7 @@ var esBot = {
                 },
 
                 themeCommand: {
-                        rank: 'user',
+                        rank: 'bouncer',
                         type: 'exact',
                         functionality: function(chat, cmd){
                                 if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
@@ -2357,7 +2414,7 @@ var esBot = {
                                 if( !esBot.commands.executable(this.rank, chat) ) return void (0);
                                 else{
                                     var msg = chat.message;
-                                    var permFrom = esBot.userUtilities.getPermission(chat.fromID);
+                                    var permFrom = esBot.userUtilities.getPermission(chat.fid);
                                       
                                     if(msg.indexOf('@') === -1 && msg.indexOf('all') !== -1){
                                         if(permFrom > 2){
@@ -2475,7 +2532,7 @@ var esBot = {
                 },
 
                 websiteCommand: {
-                        rank: 'user',
+                        rank: 'bouncer',
                         type: 'exact',
                         functionality: function(chat, cmd){
                                 if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
@@ -2488,7 +2545,7 @@ var esBot = {
                 },
 
                 youtubeCommand: {
-                        rank: 'user',
+                        rank: 'bouncer',
                         type: 'exact',
                         functionality: function(chat, cmd){
                                 if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
