@@ -490,7 +490,7 @@ var esBot = {
                 if(esBot.roomSettings.motdEnabled) interval = esBot.roomSettings.motdInterval;
                 else interval = esBot.roomSettings.messageInterval;
                 if((esBot.room.roomstats.songCount % interval) === 0 && esBot.status){
-                    API.sendChat("/me Plug will be down for maintenance on Monday, August 4th. Please read http://blog.plug.dj/2014/07/site-update-maintenance/ and http://blog.plug.dj/2014/07/message-to-those-using-extensions-or-bots/ for more info.");
+                    API.sendChat("");
                     var msg;
                     if(esBot.roomSettings.motdEnabled){
                         msg = esBot.roomSettings.motd;
