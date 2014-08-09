@@ -582,7 +582,7 @@ var esBot = {
         eventDjadvance: function(obj){                
             var lastplay = obj.lastPlay;
             if(typeof lastplay === 'undefined') return void (0);
-            if(esBot.roomSettings.songstats) API.sendChat("/me " + lastplay.media._previousAttributes.author + " - " + lastplay.media._previousAttributes.title + ": " + lastplay.score.positive + "W/" + lastplay.score.curates + "G/" + lastplay.score.negative + "M.")
+            if(esBot.roomSettings.songstats) API.sendChat("")
             esBot.room.roomstats.totalWoots += lastplay.score.positive;
             esBot.room.roomstats.totalMehs += lastplay.score.negative;
             esBot.room.roomstats.totalCurates += lastplay.score.curates;
@@ -598,7 +598,7 @@ var esBot = {
                     var now = +new Date();
                     var interfix = '';
                     if(plays > 1) interfix = 's'
-                    API.sendChat('/me :repeat: This song has been played ' + plays + ' time' + interfix + ' in the last ' + esBot.roomUtilities.msToStr(Date.now() - firstPlayed) + ', last play was ' + esBot.roomUtilities.msToStr(Date.now() - lastPlayed) + ' ago. :repeat: ');
+                    API.sendChat('');
 
                     esBot.room.historyList[i].push(+new Date());
                     alreadyPlayed = true;
