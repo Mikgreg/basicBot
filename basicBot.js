@@ -122,7 +122,7 @@ var esBot = {
             website: null,
             intervalMessages: [],
             messageInterval: 5,
-            songstats: true,                      
+            songstats: false,                      
         },        
         room: {        
             users: [],                
