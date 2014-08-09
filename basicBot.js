@@ -2157,7 +2157,7 @@ var esBot = {
                 },
 
                 slapCommand: {
-                        rank: 'manager',
+                        rank: 'bouncer',
                         type: 'startsWith',
 
                         slaps: ['slaps you with a tuna!',
