@@ -182,7 +182,7 @@ var esBot = {
                     var pos = Math.floor((Math.random() * API.getWaitList().length) + 1);
                     var user = esBot.userUtilities.lookupUser(winner);
                     var name = user.username;
-                    API.sendChat("/me A winner has been picked! @" + name + ");
+                    API.sendChat("/me A winner has been picked! @" + name + " to position " + pos + ".");
                     setTimeout(function(winner){
                         esBot.userUtilities.moveUser(winner, pos, false);
                     }, 1*1000, winner, pos);
