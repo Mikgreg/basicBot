@@ -36,7 +36,7 @@ var retrieveFromStorage = function(){
         var room = JSON.parse(localStorage.getItem("esBotRoom"));
         var elapsed = Date.now() - JSON.parse(info).time;
         if((elapsed < 1*60*60*1000)){
-            API.chatLog('Retrieving previously stored data.');
+            API.chatLog('Restoring info from last session.');
             for(var prop in settings){
                 esBot.roomSettings[prop] = settings[prop];
             }
@@ -49,7 +49,7 @@ var retrieveFromStorage = function(){
             esBot.room.roomstats = room.roomstats;
             esBot.room.messages = room.messages;
             esBot.room.queue = room.queue;
-            API.chatLog('Previously stored data succesfully retrieved.');
+            API.chatLog('MikeBot has restored info from last session.');
         }
     }
     var json_sett = null;
@@ -78,12 +78,12 @@ var esBot = {
         version: "1.2.2",        
         status: false,
         name: "MikeBot",
-        creator: "Matthew with small changes by Mikgreg",
+        creator: "Matthew with changes by Mikgreg",
         loggedInID: null,
         scriptLink: "https://github.com/Mikgreg/basicBot/blob/master/basicBot.js",
         cmdLink: "https://github.com/Mikgreg/basicBot/blob/master/commands.md",
         roomSettings: {
-            maximumAfk: 90,
+            maximumAfk: 60,
             afkRemoval: false,                
             maximumDc: 15,                                
             bouncerPlus: true,                
@@ -94,10 +94,10 @@ var esBot = {
             maximumCycletime: 10,                
             timeGuard: true,
             maximumSongLength: 8,                
-            autodisable: true,                
+            autodisable: false,                
             commandCooldown: 0,
             usercommandsEnabled: false,                
-            lockskipPosition: 3,
+            lockskipPosition: 2,
             lockskipReasons: [ ["theme", "This song does not fit the room theme. "], 
                     ["op", "This song is on the OP list. "], 
                     ["history", "This song is in the history. "], 
@@ -110,7 +110,7 @@ var esBot = {
             afkRankCheck: "manager",                
             motdEnabled: true,
             motdInterval: 5,
-            motd: "Remember to click woot to earn points!",                
+            motd: "You can get autowoot at http://plugcubed.net/",                
             filterChat: true,
             etaRestriction: false,
             welcome: false,
@@ -138,8 +138,8 @@ var esBot = {
             autodisableInterval: null,
             autodisableFunc: function(){
                 if(esBot.status && esBot.roomSettings.autodisable){
-                    API.sendChat('');
-                    API.sendChat('');
+                    API.sendChat('!afkdisable');
+                    API.sendChat('!joindisable');
                 }
             },
             queueing: 0,
@@ -172,7 +172,7 @@ var esBot = {
                 startRoulette: function(){
                     esBot.room.roulette.rouletteStatus = true;
                     esBot.room.roulette.countdown = setTimeout(function(){ esBot.room.roulette.endRoulette(); }, 60 * 1000);
-                    API.sendChat("/me [Roulette] Type !join for a chance to get a new waitlist spot!");
+                    API.sendChat("/me [Roulette] Want a random spot in the waitlist? Type !join");
                 },
                 endRoulette: function(){
                     esBot.room.roulette.rouletteStatus = false;
@@ -310,7 +310,7 @@ var esBot = {
                 if(user.lastDC.time === null) return ('/me @' + name + ' did not disconnect during my time here.');
                 var dc = user.lastDC.time;
                 var pos  = user.lastDC.position;
-                if(pos === null) return ("/me Wait until this song passes and try that command again.");
+                if(pos === null) return ("/me The waitlist needs to update at least once to register the user's last position.");
                 var timeDc = Date.now() - dc;
                 var validDC = false;
                 if(esBot.roomSettings.maximumDc * 60 * 1000 > timeDc){
@@ -1224,7 +1224,7 @@ var esBot = {
                 },
 
                 baCommand: {
-                        rank: 'user',
+                        rank: 'bouncer',
                         type: 'exact',
                         functionality: function(chat, cmd){
                                 if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
@@ -1677,7 +1677,7 @@ var esBot = {
                 },
 
                 linkCommand: {
-                        rank: 'user',
+                        rank: 'bouncer',
                         type: 'exact',
                         functionality: function(chat, cmd){
                                 if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
@@ -1995,7 +1995,7 @@ var esBot = {
                 },
 
                 opCommand: {
-                        rank: 'manager',
+                        rank: 'bouncer',
                         type: 'exact',
                         functionality: function(chat, cmd){
                                 if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
@@ -2112,7 +2112,7 @@ var esBot = {
                 },
 
                 rulesCommand: {
-                        rank: 'manager',
+                        rank: 'bouncer',
                         type: 'exact',
                         functionality: function(chat, cmd){
                                 if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
@@ -2157,7 +2157,7 @@ var esBot = {
                 },
 
                 slapCommand: {
-                        rank: 'bouncer',
+                        rank: 'manager',
                         type: 'startsWith',
 
                         slaps: ['slaps you with a tuna!',
@@ -2204,7 +2204,7 @@ var esBot = {
                 },  
 
                 sourceCommand: {
-                        rank: 'manager',
+                        rank: 'ambassador',
                         type: 'exact',
                         functionality: function(chat, cmd){
                                 if(this.type === 'exact' && chat.message.length !== cmd.length) return void (0);
